@@ -1,0 +1,9 @@
+version: '3.5'
+
+services:
+  database:
+    image: mysql:5
+    environment:
+      MYSQL_ROOT_PASSWORD: test
+    ports:
+      - 127.0.0.1:13306:3306

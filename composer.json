@@ -85,6 +85,11 @@
         "discard-changes": true
     },
     "scripts": {
-        "test": "vendor/bin/phpunit"
+        "test": "vendor/bin/phpunit",
+        "test-docker": [
+            "docker-compose up -d",
+            "while ! mysql -h 127.0.0.1 -P 13306 -u root -ptest -e 'SELECT 1' > /dev/null 2>/dev/null; do sleep 1s; done",
+            "TESTING_DB_PORT=13306 TESTING_DB_PASS=test vendor/bin/phpunit; echo $?"
+        ]
     }
 }
