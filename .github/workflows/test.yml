@@ -11,6 +11,43 @@ jobs:
       matrix:
         php: ['7.1', '7.2', '7.3', '7.4', '8.0']
         laravel: ['5.5', '5.6', '5.7', '5.8', '6.x', '7.x']
+        version: ['source', 'dist']
+        include:
+          # Dependencies for 5.5
+          - laravel: '5.5'
+            phpunit-version: '^6.0'
+            laravel-version: '~5.5.0'
+            orchestra-version: '~3.5.0'
+
+          # Dependencies for 5.6
+          - laravel: '5.6'
+            phpunit-version: '^7.0'
+            laravel-version: '~5.6.0'
+            orchestra-version: '~3.6.0'
+
+          # Dependencies for 5.7
+          - laravel: '5.7'
+            phpunit-version: '^7.0'
+            laravel-version: '~5.7.0'
+            orchestra-version: '~3.7.0'
+
+          # Dependencies for 5.8
+          - laravel: '5.8'
+            phpunit-version: '^7.0'
+            laravel-version: '~5.8.0'
+            orchestra-version: '~3.8.0'
+
+          # Dependencies for 6.x
+          - laravel: '6.x'
+            phpunit-version: '^8.3'
+            laravel-version: '^6.0'
+            orchestra-version: '^4.0'
+
+          # Dependencies for 7.x
+          - laravel: '7.x'
+            phpunit-version: '^8.5'
+            laravel-version: '^7.0'
+            orchestra-version: '^5.0'
         exclude:
           # Laravel 6.x is 7.2+
           - php: '7.1'
@@ -60,66 +97,27 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
-          key: composer-${{ runner.os }}-${{ matrix.laravel }}-${{ matrix.php }}-${{ hashFiles('**/composer.json') }}
+          key: composer-${{ runner.os }}-${{ matrix.version }}-${{ matrix.laravel }}-${{ matrix.php }}-${{ hashFiles('**/composer.json') }}
           restore-keys: |
-            composer-${{ runner.os }}-${{ matrix.laravel }}-${{ matrix.php }}-
-            composer-${{ runner.os }}-${{ matrix.laravel }}-
+            composer-${{ runner.os }}-${{ matrix.version }}-${{ matrix.laravel }}-${{ matrix.php }}-
+            composer-${{ runner.os }}-${{ matrix.version }}-${{ matrix.laravel }}-
+            composer-${{ runner.os }}-${{ matrix.version }}-
             composer-${{ runner.os }}-
 
-      - name: Attempt to be PHP 7.4.5 (PHP 8.0)
+      - name: Attempt to be php 7.4 on php 8.0
         if: ( matrix.php == '8.0' )
         run: composer config platform.php 7.4.5
 
-      - name: Install dependencies for Laravel 5.5
-        if: ( matrix.laravel == '5.5' )
+      - name: Install dependencies
         run: |
-          composer require "phpunit/phpunit:^6.0" --no-update
-          composer require "laravel/framework:~5.5.0" --no-update
-          composer require "orchestra/database:~3.5.0" --no-update
-          composer require "orchestra/testbench:~3.5.0" --no-update
-
-      - name: Install dependencies for Laravel 5.6
-        if: ( matrix.laravel == '5.6' )
-        run: |
-          composer require "phpunit/phpunit:^7.0" --no-update
-          composer require "laravel/framework:~5.6.0" --no-update
-          composer require "orchestra/database:~3.6.0" --no-update
-          composer require "orchestra/testbench:~3.6.0" --no-update
-
-      - name: Install dependencies for Laravel 5.7
-        if: ( matrix.laravel == '5.7' )
-        run: |
-          composer require "phpunit/phpunit:^7.0" --no-update
-          composer require "laravel/framework:~5.7.0" --no-update
-          composer require "orchestra/database:~3.7.0" --no-update
-          composer require "orchestra/testbench:~3.7.0" --no-update
-
-      - name: Install dependencies for Laravel 5.8
-        if: ( matrix.laravel == '5.8' )
-        run: |
-          composer require "phpunit/phpunit:^7.0" --no-update
-          composer require "laravel/framework:~5.8.0" --no-update
-          composer require "orchestra/database:~3.8.0" --no-update
-          composer require "orchestra/testbench:~3.8.0" --no-update
-
-      - name: Install dependencies for Laravel 6
-        if: ( matrix.laravel == '6.x' )
-        run: |
-          composer require "phpunit/phpunit:^8.3" --no-update
-          composer require "laravel/framework:^6.0" --no-update
-          composer require "orchestra/database:^4.0" --no-update
-          composer require "orchestra/testbench:^4.0" --no-update
-
-      - name: Install dependencies for Laravel 7
-        if: ( matrix.laravel == '7.x' )
-        run: |
-          composer require "phpunit/phpunit:^8.5" --no-update
-          composer require "laravel/framework:^7.0" --no-update
-          composer require "orchestra/database:^5.0" --no-update
-          composer require "orchestra/testbench:^5.0" --no-update
+          composer require --no-update \
+            phpunit/phpunit:${{ matrix.phpunit-version }} \
+            laravel/framework:${{ matrix.laravel-version }} \
+            orchestra/database:${{ matrix.orchestra-version }} \
+            orchestra/testbench:${{ matrix.orchestra-version }}
 
       - name: Install composer dependencies
-        run: composer install --no-suggest --no-progress --no-interaction --prefer-source
+        run: composer install --no-suggest --no-progress --no-interaction --prefer-${{ matrix.version }}
 
       - name: Run unit tests
         run: vendor/bin/phpunit --coverage-text
