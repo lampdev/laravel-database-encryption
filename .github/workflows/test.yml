@@ -5,9 +5,10 @@ on:
 
 jobs:
   test:
-    name: "Build"
+    name: "Test (L${{ matrix.laravel }}, P${{ matrix.php }}, ${{ matrix.version }})"
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         php: ['7.1', '7.2', '7.3', '7.4', '8.0']
         laravel: ['5.5', '5.6', '5.7', '5.8', '6.x', '7.x']
