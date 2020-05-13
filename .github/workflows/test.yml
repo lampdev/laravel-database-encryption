@@ -9,12 +9,23 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php: ['7.1', '7.2', '7.3', '7.4']
-        laravel: ['5.5', '5.6', '5.7', '5.8', '6.x']
+        php: ['7.1', '7.2', '7.3', '7.4', '8.0']
+        laravel: ['5.5', '5.6', '5.7', '5.8', '6.x', '7.x']
         exclude:
           # Laravel 6.x is 7.2+
           - php: '7.1'
             laravel: '6.x'
+          - php: '7.1'
+            laravel: '7.x'
+          # Don't test Laravel <6.x on 8.0+
+          - php: '8.0'
+            laravel: '5.5'
+          - php: '8.0'
+            laravel: '5.6'
+          - php: '8.0'
+            laravel: '5.7'
+          - php: '8.0'
+            laravel: '5.8'
     services:
       database:
         image: mysql:5
@@ -55,6 +66,9 @@ jobs:
             composer-${{ runner.os }}-${{ matrix.laravel }}-
             composer-${{ runner.os }}-
 
+      - name: Attempt to be PHP 7.4.5 (PHP 8.0)
+        if: ( matrix.php == '8.0' )
+        run: composer config platform.php 7.4.5
 
       - name: Install dependencies for Laravel 5.5
         if: ( matrix.laravel == '5.5' )
@@ -95,6 +109,14 @@ jobs:
           composer require "laravel/framework:^6.0" --no-update
           composer require "orchestra/database:^4.0" --no-update
           composer require "orchestra/testbench:^4.0" --no-update
+
+      - name: Install dependencies for Laravel 7
+        if: ( matrix.laravel == '7.x' )
+        run: |
+          composer require "phpunit/phpunit:^8.5" --no-update
+          composer require "laravel/framework:^7.0" --no-update
+          composer require "orchestra/database:^5.0" --no-update
+          composer require "orchestra/testbench:^5.0" --no-update
 
       - name: Install composer dependencies
         run: composer install --no-suggest --no-progress --no-interaction --prefer-source
