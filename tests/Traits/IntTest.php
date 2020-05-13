@@ -30,7 +30,7 @@ class IntTest extends DatabaseTestCase
         $model = DatabaseModel::create($this->randomValues());
 
         $this->assertTrue($model->exists);
-        $this->assertNotFalse(strpos($model->getOriginal('should_be_encrypted_int'), '__LARAVEL-DATABASE-ENCRYPTED-'));
+        $this->assertNotFalse(strpos($model->getTrueOriginal('should_be_encrypted_int'), '__LARAVEL-DATABASE-ENCRYPTED-'));
         $this->assertTrue(is_int($model->should_be_encrypted_int));
         $this->assertFalse(is_float($model->should_be_encrypted_int));
         $this->assertFalse(is_double($model->should_be_encrypted_int));

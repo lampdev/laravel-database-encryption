@@ -30,7 +30,7 @@ class FloatTest extends DatabaseTestCase
         $model = DatabaseModel::create($this->randomValues());
 
         $this->assertTrue($model->exists);
-        $this->assertNotFalse(strpos($model->getOriginal('should_be_encrypted_float'), '__LARAVEL-DATABASE-ENCRYPTED-'));
+        $this->assertNotFalse(strpos($model->getTrueOriginal('should_be_encrypted_float'), '__LARAVEL-DATABASE-ENCRYPTED-'));
         $this->assertFalse(is_int($model->should_be_encrypted_float));
         $this->assertTrue(is_float($model->should_be_encrypted_float));
         $this->assertTrue(is_double($model->should_be_encrypted_float));

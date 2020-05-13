@@ -35,9 +35,9 @@ class DirtyTest extends DatabaseTestCase
         $new_model = DatabaseModel::findOrFail($model->id);
         $new_model->update($this->randomValues());
 
-        $this->assertNotEquals($model->getOriginal('should_be_encrypted'), $new_model->getOriginal('should_be_encrypted'));
+        $this->assertNotEquals($model->getTrueOriginal('should_be_encrypted'), $new_model->getTrueOriginal('should_be_encrypted'));
         $this->assertNotEquals($model->should_be_encrypted, $new_model->should_be_encrypted);
-        $this->assertNotEquals($model->getOriginal('shouldnt_be_encrypted'), $new_model->getOriginal('shouldnt_be_encrypted'));
+        $this->assertNotEquals($model->getTrueOriginal('shouldnt_be_encrypted'), $new_model->getTrueOriginal('shouldnt_be_encrypted'));
         $this->assertNotEquals($model->shouldnt_be_encrypted, $new_model->shouldnt_be_encrypted);
     }
 }

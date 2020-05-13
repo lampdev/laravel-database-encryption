@@ -62,4 +62,15 @@ abstract class RealModel extends Model
 
         return count($rows) === 1 && count($rows[0]) === count($columns) ? $rows[0] : null;
     }
+
+    /**
+     * Get the model's raw original attribute values, in a Laravel-version agnostic way.
+     */
+    public function getTrueOriginal($key = null, $default = null)
+    {
+        if (\method_exists($this, 'getRawOriginal')) {
+            return $this->getRawOriginal($key, $default);
+        }
+        return $this->getOriginal($key, $default);
+    }
 }
