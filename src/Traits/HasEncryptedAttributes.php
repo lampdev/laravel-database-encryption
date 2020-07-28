@@ -12,6 +12,7 @@ namespace AustinHeap\Database\Encryption\Traits;
 use AustinHeap\Database\Encryption\EncryptionFacade as DatabaseEncryption;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Contracts\Encryption\EncryptException;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 
@@ -284,6 +285,48 @@ trait HasEncryptedAttributes
         }
 
         return $dirty;
+    }
+
+    /**
+     * Determine if the new and old values for a given key are equivalent.
+     *
+     * @param  string  $key
+     * @return bool
+     */
+    public function originalIsEquivalent($key)
+    {
+        if (! array_key_exists($key, $this->original)) {
+            return false;
+        }
+
+        // Unfortunately this method isn't single responsibility, it retrieves and compares attributes,
+        // therefore we have to copy the whole thing just to change the behaviour of one of its responsibilities.
+        $attribute = $this->doDecryptAttribute($key, Arr::get($this->attributes, $key));
+        $original = Arr::get($this->original, $key);
+
+        if ($attribute === $original) {
+            return true;
+        } elseif (is_null($attribute)) {
+            return false;
+        } elseif ($this->isDateAttribute($key)) {
+            return $this->fromDateTime($attribute) ===
+                $this->fromDateTime($original);
+        } elseif ($this->hasCast($key, ['object', 'collection'])) {
+            return $this->castAttribute($key, $attribute) ==
+                $this->castAttribute($key, $original);
+        } elseif ($this->hasCast($key, ['real', 'float', 'double'])) {
+            if (($attribute === null && $original !== null) || ($attribute !== null && $original === null)) {
+                return false;
+            }
+
+            return abs($this->castAttribute($key, $attribute) - $this->castAttribute($key, $original)) < PHP_FLOAT_EPSILON * 4;
+        } elseif ($this->hasCast($key, static::$primitiveCastTypes)) {
+            return $this->castAttribute($key, $attribute) ===
+                $this->castAttribute($key, $original);
+        }
+
+        return is_numeric($attribute) && is_numeric($original)
+            && strcmp((string) $attribute, (string) $original) === 0;
     }
 
     /**
